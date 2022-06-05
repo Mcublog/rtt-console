@@ -4,3 +4,4 @@ colorama
 auto-py-to-exe
 build
 twine
+auto-changelog
