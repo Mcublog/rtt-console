@@ -7,5 +7,5 @@ and the like.
 Usage:
 
 ```bash
-
+rtt-console -t STM32F407VE
 ```

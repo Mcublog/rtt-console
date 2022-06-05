@@ -1,3 +1,6 @@
 pylink-square
 prompt_toolkit
 colorama
+auto-py-to-exe
+build
+twine
