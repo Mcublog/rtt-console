@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 import functools
 import time
@@ -77,7 +79,7 @@ def main():
     parser.add_argument(f'-t',
                         '--target',
                         type=str,
-                        help='Target chip name (example: {CHIP_NAME_DEFAULT})',
+                        help=f'Target chip name (example: {CHIP_NAME_DEFAULT})',
                         required=True)
 
     parser.add_argument(f'-s', '--speed', type=int, help='Target speed (default: auto)', required=False, default=0)
