@@ -12,9 +12,8 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.patch_stdout import patch_stdout
 
+from rtt_console.jlink_dongle import JLinkDongle, JLinkDongleException
 from rtt_console.version import VERSION
-
-from .jlink_dongle import JLinkDongle, JLinkDongleException
 
 DESCRIPTION = f'RTT Console {Clr.GREEN}v{VERSION}{Clr.RESET}'
 CHIP_NAME_DEFAULT = 'STM32F407VE'
