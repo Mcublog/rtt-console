@@ -1,1 +1,6 @@
 env/
+src/rtt_console/__pycache__/
+build/
+src/rtt_console.egg-info
+rtt-console.spec
+bin
