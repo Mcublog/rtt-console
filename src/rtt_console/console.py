@@ -76,7 +76,7 @@ def conole_read_input(kill_evt: Event):
             except KeyboardInterrupt as e:
                 print(e)
                 kill_evt.set()
-                break
+                return
             cmd_queue.put(input_cmd_string)
 
 
