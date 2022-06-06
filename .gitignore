@@ -4,3 +4,4 @@ build/
 src/rtt_console.egg-info
 rtt-console.spec
 bin
+dist/

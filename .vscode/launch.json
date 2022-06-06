@@ -8,13 +8,16 @@
             "name": "Python: Console",
             "type": "python",
             "request": "launch",
-            "program": "${file}",
+            "program": "./src/rtt_console/console.py",
             "args": [
                 "-t",
                 "STM32F407VE"
             ],
             "console": "integratedTerminal",
-            "justMyCode": true
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}/src"
+            }
         }
     ]
 }
