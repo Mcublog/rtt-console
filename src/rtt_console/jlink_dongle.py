@@ -60,7 +60,11 @@ class JLinkDongle:
     def read_rtt_string(self, terminal_number:int = 0) -> str:
         data = self.read_rtt(terminal_number=terminal_number)
         if data:
-            return bytes(data).decode('utf-8')
+            try:
+                return bytes(data).decode('utf-8')
+            except:
+                print(f"DO not decode: {data}")
+                return ""
         return ""
 
     def write_rtt_sring(self, data:str, terminal_number:int = 0) -> None:
@@ -71,3 +75,8 @@ class JLinkDongle:
         self.jlink.close()
         # self.jlink.rtt_stop()
         self.connect()
+
+
+    @check_exception
+    def reset_target(self):
+        self.jlink.reset(ms=10, halt=False)

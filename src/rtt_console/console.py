@@ -48,7 +48,7 @@ def reconnect(jlink: JLinkDongle) -> bool:
 
 @exception_handling
 def write_cmd(jlink: JLinkDongle, cmd: str) -> bool:
-    jlink.write_rtt_sring(cmd)
+    jlink.write_rtt_sring(cmd + "\r\n")
     return True
 
 
@@ -56,21 +56,27 @@ def write_cmd(jlink: JLinkDongle, cmd: str) -> bool:
 def read_data(jlink: JLinkDongle) -> str | bool:
     return jlink.read_rtt_string(0)
 
+@exception_handling
+def reset_target(jlink: JLinkDongle) -> bool:
+    jlink.reset_target()
+    return True
+
 
 HELP_CMD = {'help', 'h'}
 RECONNECT_CMD = {'reconnect', 'r'}
+RESET_CMD = {'reset', 'rst'}
 
 def conole_read_input(kill_evt: Event):
     session = PromptSession()
     input_cmd_string = ""
-    while True:
+    while not kill_evt.wait(0.01):
         with patch_stdout(raw=True):
             try:
                 input_cmd_string = session.prompt("> ", auto_suggest=AutoSuggestFromHistory())
             except KeyboardInterrupt as e:
                 print(e)
                 kill_evt.set()
-                return
+                break
             cmd_queue.put(input_cmd_string)
 
 
@@ -103,9 +109,10 @@ def main():
             cmd = cmd_queue.get()
             if cmd in RECONNECT_CMD:
                 try_to_reconnect = True
+            elif cmd in RESET_CMD:
+                try_to_reconnect = not reset_target(jlink)
             else:
-                if not write_cmd(jlink, cmd_queue.get()):
-                    try_to_reconnect = True
+                try_to_reconnect = not write_cmd(jlink, cmd_queue.get())
         rx_data = read_data(jlink)
         if rx_data:
             print(rx_data, end="")
