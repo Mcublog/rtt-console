@@ -14,7 +14,10 @@
                 "STM32F407VE"
             ],
             "console": "integratedTerminal",
-            "justMyCode": true
+            "justMyCode": true,
+            "env": {
+                "PYTHONPATH": "${workspaceRoot}/src"
+            }
         }
     ]
 }
