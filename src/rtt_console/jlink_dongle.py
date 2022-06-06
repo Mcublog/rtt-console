@@ -55,7 +55,9 @@ class JLinkDongle:
 
     @check_exception
     def write_rtt(self, data:bytes, terminal_number:int = 0) -> None:
-        self.jlink.rtt_write(terminal_number, data)
+        cnt = self.jlink.rtt_write(terminal_number, data)
+        if cnt == 0:
+            print(f"write error: sent {cnt} bytes")
 
     def read_rtt_string(self, terminal_number:int = 0) -> str:
         data = self.read_rtt(terminal_number=terminal_number)

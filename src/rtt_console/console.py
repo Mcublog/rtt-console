@@ -48,7 +48,7 @@ def reconnect(jlink: JLinkDongle) -> bool:
 
 @exception_handling
 def write_cmd(jlink: JLinkDongle, cmd: str) -> bool:
-    jlink.write_rtt_sring(cmd + "\r\n")
+    jlink.write_rtt_sring(cmd + "\n")
     return True
 
 
@@ -112,7 +112,7 @@ def main():
             elif cmd in RESET_CMD:
                 try_to_reconnect = not reset_target(jlink)
             else:
-                try_to_reconnect = not write_cmd(jlink, cmd_queue.get())
+                try_to_reconnect = not write_cmd(jlink, cmd)
         rx_data = read_data(jlink)
         if rx_data:
             print(rx_data, end="")
