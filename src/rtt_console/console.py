@@ -10,8 +10,10 @@ from typing import Callable
 from colorama import Fore as Clr
 from prompt_toolkit import PromptSession
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
+from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.patch_stdout import patch_stdout
 
+from rtt_console.default_command import COMMANDS
 from rtt_console.jlink_dongle import JLinkDongle, JLinkDongleException
 from rtt_console.version import VERSION
 
@@ -19,6 +21,7 @@ DESCRIPTION = f'RTT Console {Clr.GREEN}v{VERSION}{Clr.RESET}'
 CHIP_NAME_DEFAULT = 'STM32F407VE'
 
 cmd_queue = Queue()
+completer = WordCompleter(COMMANDS)
 
 
 def exception_handling(func: Callable):
@@ -72,7 +75,7 @@ def conole_read_input(kill_evt: Event):
     while not kill_evt.wait(0.01):
         with patch_stdout(raw=True):
             try:
-                input_cmd_string = session.prompt("> ", auto_suggest=AutoSuggestFromHistory())
+                input_cmd_string = session.prompt("> ", auto_suggest=AutoSuggestFromHistory(), completer=completer)
             except KeyboardInterrupt as e:
                 print(e)
                 kill_evt.set()
