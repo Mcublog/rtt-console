@@ -1,0 +1,1 @@
+COMMANDS = ['reset', 'reconnect']

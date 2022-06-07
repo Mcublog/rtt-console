@@ -2,7 +2,7 @@ import functools
 from dataclasses import dataclass, field
 
 from colorama import Fore as Clr
-from pylink import JLink, JLinkException, JLinkInterfaces
+from pylink import JLink, JLinkException, JLinkInterfaces, library
 
 CHIP_NAME_DEFAULT = 'STM32F407VE'
 
@@ -18,6 +18,7 @@ class JLinkDongle:
     speed:str|int = 'auto'
     chip_name:str = CHIP_NAME_DEFAULT
     jlink:JLink = field(init=False)
+    dll_path:str = ""
 
     @staticmethod
     def check_exception(func):
@@ -34,7 +35,16 @@ class JLinkDongle:
 
     @check_exception
     def connect(self):
-        self.jlink = JLink()
+        jlinkdll = None
+        if self.dll_path:
+            jlinkdll = library.Library()
+            try:
+                print(f"Using path to DLL: {self.dll_path}")
+                jlinkdll.load(self.dll_path)
+            except:
+                print(f"ERROR: check path: {self.dll_path}")
+                return
+        self.jlink = JLink(lib=jlinkdll)
         self.jlink.disable_dialog_boxes()
         self.jlink.open()
         self.jlink.rtt_stop()
