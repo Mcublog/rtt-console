@@ -92,12 +92,13 @@ def main():
                         required=True)
 
     parser.add_argument(f'-s', '--speed', type=int, help='Target speed (default: auto)', required=False, default=0)
+    parser.add_argument('-p', '--path', type=str, help='Path to JLink DLL', required=False, default="")
     args = parser.parse_args()
 
     try_to_reconnect = False
     if args.speed == 0:
         args.speed = 'auto'
-    jlink = JLinkDongle(chip_name=args.target, speed=args.speed)
+    jlink = JLinkDongle(chip_name=args.target, speed=args.speed, dll_path=args.path)
     if connect(jlink) == False:
         return
     kill_evt = Event()

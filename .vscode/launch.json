@@ -12,6 +12,8 @@
             "args": [
                 "-t",
                 "STM32F407VE"
+                // "-p",
+                // "/opt/SEGGER/JLink_V764c/libjlinkarm.so"
             ],
             "console": "integratedTerminal",
             "justMyCode": true,
