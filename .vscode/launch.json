@@ -11,9 +11,10 @@
             "program": "./src/rtt_console/console.py",
             "args": [
                 "-t",
-                "STM32F407VE"
+                "STM32F407VE",
                 // "-p",
                 // "/opt/SEGGER/JLink_V764c/libjlinkarm.so"
+                // "-pwr"
             ],
             "console": "integratedTerminal",
             "justMyCode": true,
