@@ -19,6 +19,7 @@ class JLinkDongle:
     chip_name:str = CHIP_NAME_DEFAULT
     jlink:JLink = field(init=False)
     dll_path:str = ""
+    pwr_target:bool = False
 
     @staticmethod
     def check_exception(func):
@@ -47,6 +48,7 @@ class JLinkDongle:
         self.jlink = JLink(lib=jlinkdll)
         self.jlink.disable_dialog_boxes()
         self.jlink.open()
+        self.jlink.power_on() if self.pwr_target else self.jlink.power_off()
         self.jlink.rtt_stop()
         self.jlink.set_tif(JLinkInterfaces.SWD)
         self.jlink.connect(chip_name=self.chip_name, speed=self.speed, verbose=True) # type: ignore
@@ -58,6 +60,8 @@ class JLinkDongle:
         print(f"RTT RX buffers at {self.jlink.speed} kHz")
         print(f"connected to {endian}-Endian {self.jlink.core_name()}")
         print(f"running at {self.jlink.cpu_speed() / 1e6:.3f} MHz")
+        return True
+
 
     @check_exception
     def read_rtt(self, terminal_number:int = 0) -> list:
@@ -92,3 +96,8 @@ class JLinkDongle:
     @check_exception
     def reset_target(self):
         self.jlink.reset(ms=10, halt=False)
+
+    @check_exception
+    def power_on(self, on: bool) -> None:
+        self.pwr_target = on
+        self.jlink.power_on() if on else self.jlink.power_off()
