@@ -5,6 +5,7 @@ from colorama import Fore as Clr
 from pylink import JLink, JLinkException, JLinkInterfaces, library
 
 CHIP_NAME_DEFAULT = 'STM32F407VE'
+DEFAULT_BUFFER_INDEX = 0
 
 class JLinkDongleException(Exception):
 
@@ -58,32 +59,36 @@ class JLinkDongle:
         print("\n" + "=" * 10)
         print(f"Connected to: {self.chip_name}")
         print(f"RTT RX buffers at {self.jlink.speed} kHz")
-        print(f"connected to {endian}-Endian {self.jlink.core_name()}")
-        print(f"running at {self.jlink.cpu_speed() / 1e6:.3f} MHz", end="\n" + "=" * 10 + "\n")
+        print(f"Connected to {endian}-Endian {self.jlink.core_name()}")
+        print(f"Running at {self.jlink.cpu_speed() / 1e6:.3f} MHz", end="\n" + "=" * 10 + "\n")
         return True
 
 
     @check_exception
-    def read_rtt(self, terminal_number:int = 0) -> list:
+    def read_rtt(self, terminal_number:int = DEFAULT_BUFFER_INDEX) -> list:
         return self.jlink.rtt_read(terminal_number, self.jlink.MAX_BUF_SIZE)
 
     @check_exception
-    def write_rtt(self, data:bytes, terminal_number:int = 0) -> None:
+    def write_rtt(self, data: bytes, terminal_number: int = DEFAULT_BUFFER_INDEX) -> None:
         cnt = self.jlink.rtt_write(terminal_number, data)
-        if cnt == 0:
-            print(f"write error: sent {cnt} bytes")
+        while cnt < len(data):
+            if cnt == 0:
+                break
+            cnt += self.jlink.rtt_write(terminal_number, data[cnt:])
+        if cnt == 0 or cnt != len(data):
+            print(f"Write error: sent {cnt} from {len(data)} bytes")
 
-    def read_rtt_string(self, terminal_number:int = 0) -> str:
+    def read_rtt_string(self, terminal_number: int = DEFAULT_BUFFER_INDEX) -> str:
         data = self.read_rtt(terminal_number=terminal_number)
         if data:
             try:
                 return bytes(data).decode('utf-8')
             except:
-                print(f"DO not decode: {data}")
+                print(f"Do not decode: {data}")
                 return ""
         return ""
 
-    def write_rtt_sring(self, data:str, terminal_number:int = 0) -> None:
+    def write_rtt_sring(self, data: str, terminal_number: int = DEFAULT_BUFFER_INDEX) -> None:
         self.write_rtt(str.encode(data, 'utf-8'), terminal_number)
 
     @check_exception
