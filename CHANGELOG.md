@@ -1,12 +1,15 @@
 # Changelog
 
-## 0.2.2 (2022-06-09)
+## 0.2.3 (2022-06-12)
 
 #### New Features
 
 * :sparkles:  target power control via JLink
+#### Refactorings
 
-Full set of changes: [`0.2.1...0.2.2`](https://github.com/Mcublog/rtt-console/compare/0.2.1...0.2.2)
+* :art: Cleanup code
+
+Full set of changes: [`0.2.1...0.2.3`](https://github.com/Mcublog/rtt-console/compare/0.2.1...0.2.3)
 
 ## 0.2.1 (2022-06-07)
 
