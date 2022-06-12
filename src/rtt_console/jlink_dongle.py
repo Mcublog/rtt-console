@@ -55,11 +55,11 @@ class JLinkDongle:
         self.jlink.rtt_start()
         endian = int.from_bytes(self.jlink._device.EndianMode, 'big') # type: ignore
         endian = {0: "Little", 1: "Big"}.get(endian, f"Unknown ({endian})")
-        print()
+        print("\n" + "=" * 10)
         print(f"Connected to: {self.chip_name}")
         print(f"RTT RX buffers at {self.jlink.speed} kHz")
         print(f"connected to {endian}-Endian {self.jlink.core_name()}")
-        print(f"running at {self.jlink.cpu_speed() / 1e6:.3f} MHz")
+        print(f"running at {self.jlink.cpu_speed() / 1e6:.3f} MHz", end="\n" + "=" * 10 + "\n")
         return True
 
 
@@ -89,9 +89,7 @@ class JLinkDongle:
     @check_exception
     def reconnect(self):
         self.jlink.close()
-        # self.jlink.rtt_stop()
         self.connect()
-
 
     @check_exception
     def reset_target(self):

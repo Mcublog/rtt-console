@@ -13,8 +13,7 @@ from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.patch_stdout import patch_stdout
 
-from rtt_console.default_command import (CONSOLE_COMMANDS, POWER_CMD,
-                                         RECONNECT_CMD, RESET_CMD)
+from rtt_console.default_command import CONSOLE_COMMANDS, ConsoleCmd
 from rtt_console.jlink_dongle import JLinkDongle, JLinkDongleException
 from rtt_console.version import VERSION
 
@@ -22,8 +21,12 @@ DESCRIPTION = f'RTT Console {Clr.GREEN}v{VERSION}{Clr.RESET}'
 CHIP_NAME_DEFAULT = 'STM32F407VE'
 
 cmd_queue = Queue()
-completer = WordCompleter(CONSOLE_COMMANDS) # type: ignore
+completer = WordCompleter(list(CONSOLE_COMMANDS))
 
+JLinkIsBroken = False
+JLinkCmdSuccess = True
+
+ENDLINE = "\n"
 
 def exception_handling(func: Callable):
 
@@ -35,7 +38,7 @@ def exception_handling(func: Callable):
             print(e)
             if func.__name__ == "reconnect":
                 time.sleep(1)
-            return False
+            return JLinkIsBroken
 
     return wrap
 
@@ -43,19 +46,19 @@ def exception_handling(func: Callable):
 @exception_handling
 def connect(jlink: JLinkDongle) -> bool:
     jlink.connect()
-    return True
+    return JLinkCmdSuccess
 
 
 @exception_handling
 def reconnect(jlink: JLinkDongle) -> bool:
     jlink.reconnect()
-    return True
+    return JLinkCmdSuccess
 
 
 @exception_handling
 def write_cmd(jlink: JLinkDongle, cmd: str) -> bool:
-    jlink.write_rtt_sring(cmd + "\n")
-    return True
+    jlink.write_rtt_sring(f"{cmd}{ENDLINE}")
+    return JLinkCmdSuccess
 
 
 @exception_handling
@@ -65,26 +68,26 @@ def read_data(jlink: JLinkDongle) -> str | bool:
 @exception_handling
 def reset_target(jlink: JLinkDongle) -> bool:
     jlink.reset_target()
-    return True
+    return JLinkCmdSuccess
 
 @exception_handling
 def power_on(jlink: JLinkDongle, on:bool) -> bool:
     jlink.power_on(on)
-    return True
+    return JLinkCmdSuccess
 
 
-def conole_read_input(kill_evt: Event):
+def reading_input(kill_evt: Event):
     session = PromptSession()
     input_cmd_string = ""
     while not kill_evt.wait(0.01):
         with patch_stdout(raw=True):
             try:
                 input_cmd_string = session.prompt("> ", auto_suggest=AutoSuggestFromHistory(), completer=completer)
-            except KeyboardInterrupt as e:
-                print(e)
-                kill_evt.set()
-                return
+            except KeyboardInterrupt:
+                print(f"Exit from: {DESCRIPTION}")
+                break
             cmd_queue.put(input_cmd_string)
+    kill_evt.set()
 
 
 def main():
@@ -103,36 +106,36 @@ def main():
                         action=argparse.BooleanOptionalAction,
                         required=False,
                         default=False)
+
     args = parser.parse_args()
-
-
-    try_to_reconnect = False
-    if args.speed == 0:
-        args.speed = 'auto'
+    args.speed = 'auto' if args.speed == 0 else args.speed
     jlink = JLinkDongle(chip_name=args.target, speed=args.speed, dll_path=args.path, pwr_target=args.power)
-    try_to_reconnect = not connect(jlink)
+    jlink_broken = connect(jlink)
+
     kill_evt = Event()
-    input: Thread = Thread(target=conole_read_input, args=([kill_evt]), daemon=True)
+    input: Thread = Thread(target=reading_input, args=([kill_evt]), daemon=True)
     input.start()
+
     while not kill_evt.wait(0.01):
-        if try_to_reconnect:
-            try_to_reconnect = not reconnect(jlink)
-        cmd = cmd_queue.get() if not cmd_queue.empty() else ""
-        if cmd in CONSOLE_COMMANDS:
-            if cmd in RECONNECT_CMD:
-                try_to_reconnect = True
-            elif cmd in RESET_CMD:
-                try_to_reconnect = not reset_target(jlink)
-            elif cmd in POWER_CMD:
-                on = True if "on" in cmd else False
-                power_on(jlink, on)
-        elif cmd:
-            try_to_reconnect = not write_cmd(jlink, cmd)
-        rx_data = read_data(jlink)
-        if rx_data:
+        # Try to reconnect to JLink
+        if jlink_broken == JLinkIsBroken:
+            jlink_broken = reconnect(jlink)
+        # Read data from console input queue
+        if not cmd_queue.empty():
+            match cmd := cmd_queue.get_nowait():
+                case ConsoleCmd.RESET.value:
+                    jlink_broken = reset_target(jlink)
+                case ConsoleCmd.RECONNECT.value:
+                    jlink_broken = JLinkIsBroken
+                case ConsoleCmd.POWER_ON.value | ConsoleCmd.POWER_OFF.value:
+                    power_on(jlink, True if "on" in cmd else False)
+                case _:
+                    jlink_broken = write_cmd(jlink, cmd)
+        # Read data from JLink
+        if rx_data := read_data(jlink):
             print(rx_data, end="")
-        if rx_data == False:
-            try_to_reconnect = True
+        elif rx_data == JLinkIsBroken:
+            jlink_broken = JLinkIsBroken
 
 
 if __name__ == "__main__":

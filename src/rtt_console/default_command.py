@@ -1,6 +1,11 @@
-HELP_CMD = {'help'}
-RECONNECT_CMD = {'reconnect'}
-RESET_CMD = {'reset'}
-POWER_CMD = {'power_on', 'power_off'}
+from enum import Enum
 
-CONSOLE_COMMANDS = RECONNECT_CMD | RESET_CMD | POWER_CMD
+
+class ConsoleCmd(Enum):
+    HELP = 'help'
+    RECONNECT = 'reconnect'
+    RESET = 'reset'
+    POWER_ON = 'power_on'
+    POWER_OFF =  'power_off'
+
+CONSOLE_COMMANDS = {cmd.value for cmd in ConsoleCmd}
