@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class ConsoleCmd(Enum):
-    HELP = 'help'
+    # HELP = 'help'
     RECONNECT = 'reconnect'
     RESET = 'reset'
     POWER_ON = 'power_on'
