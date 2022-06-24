@@ -2,10 +2,11 @@
 
 import argparse
 import functools
+import os
 import time
 from queue import Queue
 from threading import Event, Thread
-from typing import Callable
+from typing import Callable, Union
 
 from colorama import Fore as Clr
 from prompt_toolkit import PromptSession
@@ -62,7 +63,7 @@ def write_cmd(jlink: JLinkDongle, cmd: str) -> bool:
 
 
 @exception_handling
-def read_data(jlink: JLinkDongle) -> str | bool:
+def read_data(jlink: JLinkDongle) -> Union[str, bool]:
     return jlink.read_rtt_string(0)
 
 @exception_handling
@@ -103,7 +104,6 @@ def main():
     parser.add_argument('-pwr',
                         '--power',
                         help='Power on target by JLink',
-                        action=argparse.BooleanOptionalAction,
                         required=False,
                         default=False)
 
@@ -122,15 +122,17 @@ def main():
             jlink_broken = reconnect(jlink)
         # Read data from console input queue
         if not cmd_queue.empty():
-            match cmd := cmd_queue.get_nowait():
-                case ConsoleCmd.RESET.value:
-                    jlink_broken = reset_target(jlink)
-                case ConsoleCmd.RECONNECT.value:
-                    jlink_broken = JLinkIsBroken
-                case ConsoleCmd.POWER_ON.value | ConsoleCmd.POWER_OFF.value:
-                    power_on(jlink, True if "on" in cmd else False)
-                case _:
-                    jlink_broken = write_cmd(jlink, cmd)
+            cmd = cmd_queue.get_nowait()
+            if cmd == ConsoleCmd.RESET.value:
+                jlink_broken = reset_target(jlink)
+            elif cmd == ConsoleCmd.RECONNECT.value:
+                jlink_broken = JLinkIsBroken
+            elif cmd in {ConsoleCmd.POWER_ON.value, ConsoleCmd.POWER_OFF.value}:
+                power_on(jlink, True if "on" in cmd else False)
+            elif cmd == ConsoleCmd.CLEAR.value:
+                os.system('cls' if os.name=='nt' else 'clear')
+            else:
+                jlink_broken = write_cmd(jlink, cmd)
         # Read data from JLink
         if rx_data := read_data(jlink):
             print(rx_data, end="")
