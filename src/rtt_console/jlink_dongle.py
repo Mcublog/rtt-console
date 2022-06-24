@@ -1,5 +1,6 @@
 import functools
 from dataclasses import dataclass, field
+from typing import Union
 
 from colorama import Fore as Clr
 from pylink import JLink, JLinkException, JLinkInterfaces, library
@@ -13,29 +14,28 @@ class JLinkDongleException(Exception):
         self.message = message
         super().__init__(self.message)
 
-@dataclass(slots=True)
+@dataclass
 class JLinkDongle:
     interface:JLinkInterfaces = JLinkInterfaces.SWD  # type: ignore
-    speed:str|int = 'auto'
+    speed:Union[str,int] = 'auto'
     chip_name:str = CHIP_NAME_DEFAULT
     jlink:JLink = field(init=False)
     dll_path:str = ""
     pwr_target:bool = False
 
-    @staticmethod
-    def check_exception(func):
-        @functools.wraps(func)
+    def check_exception(func): # type: ignore
+        @functools.wraps(func)  # type: ignore
         def wrap(self, *args, **kwargs):
             try:
-                return func(self, *args, **kwargs)
+                return func(self, *args, **kwargs)  # type: ignore
             except JLinkException as e:
-                if func.__name__ in {self.read_rtt.__name__, self.write_rtt.__name__}:
+                if func.__name__ in {self.read_rtt.__name__, self.write_rtt.__name__}:  # type: ignore
                     raise JLinkDongleException(f"Do not read/write from RTT Terminal")
                 raise JLinkDongleException(
-                    f"{Clr.RED}ERROR:{Clr.RESET} method name: {Clr.YELLOW}{func.__name__}{Clr.RESET} : {e}")
+                    f"{Clr.RED}ERROR:{Clr.RESET} method name: {Clr.YELLOW}{func.__name__}{Clr.RESET} : {e}")  # type: ignore
         return wrap
 
-    @check_exception
+    @check_exception # type: ignore
     def connect(self):
         jlinkdll = None
         if self.dll_path:
@@ -64,11 +64,11 @@ class JLinkDongle:
         return True
 
 
-    @check_exception
+    @check_exception # type: ignore
     def read_rtt(self, terminal_number:int = DEFAULT_BUFFER_INDEX) -> list:
         return self.jlink.rtt_read(terminal_number, self.jlink.MAX_BUF_SIZE)
 
-    @check_exception
+    @check_exception # type: ignore
     def write_rtt(self, data: bytes, terminal_number: int = DEFAULT_BUFFER_INDEX) -> None:
         cnt = self.jlink.rtt_write(terminal_number, data)
         while cnt < len(data):
@@ -91,16 +91,16 @@ class JLinkDongle:
     def write_rtt_sring(self, data: str, terminal_number: int = DEFAULT_BUFFER_INDEX) -> None:
         self.write_rtt(str.encode(data, 'utf-8'), terminal_number)
 
-    @check_exception
+    @check_exception # type: ignore
     def reconnect(self):
         self.jlink.close()
         self.connect()
 
-    @check_exception
+    @check_exception # type: ignore
     def reset_target(self):
         self.jlink.reset(ms=10, halt=False)
 
-    @check_exception
+    @check_exception # type: ignore
     def power_on(self, on: bool) -> None:
         self.pwr_target = on
         self.jlink.power_on() if on else self.jlink.power_off()
