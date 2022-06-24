@@ -96,7 +96,7 @@ def main():
                         '--target',
                         type=str,
                         help=f'Target chip name (example: {CHIP_NAME_DEFAULT})',
-                        required=True)
+                        default=CHIP_NAME_DEFAULT)
 
     parser.add_argument(f'-s', '--speed', type=int, help='Target speed (default: auto)', required=False, default=0)
     parser.add_argument('-p', '--path', type=str, help='Path to JLink DLL', required=False, default="")
