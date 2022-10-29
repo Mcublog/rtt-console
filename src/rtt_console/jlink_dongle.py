@@ -66,7 +66,11 @@ class JLinkDongle:
 
     @check_exception # type: ignore
     def read_rtt(self, terminal_number:int = DEFAULT_BUFFER_INDEX) -> list:
-        return self.jlink.rtt_read(terminal_number, self.jlink.MAX_BUF_SIZE)
+        try:
+            return self.jlink.rtt_read(terminal_number, self.jlink.MAX_BUF_SIZE)
+        except ValueError as e:
+            print(f"Reading exception: {e}")
+            raise JLinkDongleException(f"Do not read/write from RTT Terminal")
 
     @check_exception # type: ignore
     def write_rtt(self, data: bytes, terminal_number: int = DEFAULT_BUFFER_INDEX) -> None:
