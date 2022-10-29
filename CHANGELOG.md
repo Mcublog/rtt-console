@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.6 (2022-10-29)
+
+#### Fixes
+
+* :bug: handling read exaption
+
+Full set of changes: [`0.2.5...0.2.6`](https://github.com/Mcublog/rtt-console/compare/0.2.5...0.2.6)
+
 ## 0.2.5 (2022-06-24)
 
 #### New Features
