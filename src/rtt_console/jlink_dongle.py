@@ -8,6 +8,8 @@ from pylink import JLink, JLinkException, JLinkInterfaces, library
 CHIP_NAME_DEFAULT = 'STM32F407VE'
 DEFAULT_BUFFER_INDEX = 0
 
+CODEPAGES = ('utf-8', 'cp866', 'cp1251')
+
 class JLinkDongleException(Exception):
 
     def __init__(self, message):
@@ -84,12 +86,15 @@ class JLinkDongle:
 
     def read_rtt_string(self, terminal_number: int = DEFAULT_BUFFER_INDEX) -> str:
         data = self.read_rtt(terminal_number=terminal_number)
-        if data:
+        if not data:
+            return ""
+        for coding in CODEPAGES:
             try:
-                return bytes(data).decode('utf-8')
+                return bytes(data).decode(coding)
             except:
-                print(f"Do not decode: {data}")
-                return ""
+                continue
+        else:
+            print(f"Do not decode: {data}")
         return ""
 
     def write_rtt_sring(self, data: str, terminal_number: int = DEFAULT_BUFFER_INDEX) -> None:
