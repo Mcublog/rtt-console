@@ -38,7 +38,7 @@ class JLinkDongle:
         return wrap
 
     @check_exception # type: ignore
-    def connect(self):
+    def connect(self) -> bool:
         jlinkdll = None
         if self.dll_path:
             jlinkdll = library.Library()
@@ -47,8 +47,12 @@ class JLinkDongle:
                 jlinkdll.load(self.dll_path)
             except:
                 print(f"ERROR: check path: {self.dll_path}")
-                return
-        self.jlink = JLink(lib=jlinkdll)
+                return False
+        try:
+            self.jlink = JLink(lib=jlinkdll)
+        except Exception as e:
+            print(f"ERROR: JLink libs not found: {e}")
+            return False
         self.jlink.disable_dialog_boxes()
         self.jlink.open()
         self.jlink.power_on() if self.pwr_target else self.jlink.power_off()
