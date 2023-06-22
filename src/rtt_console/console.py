@@ -46,8 +46,7 @@ def exception_handling(func: Callable):
 
 @exception_handling
 def connect(jlink: JLinkDongle) -> bool:
-    jlink.connect()
-    return JLinkCmdSuccess
+    return jlink.connect()
 
 
 @exception_handling
@@ -111,6 +110,9 @@ def main():
     args.speed = 'auto' if args.speed == 0 else args.speed
     jlink = JLinkDongle(chip_name=args.target, speed=args.speed, dll_path=args.path, pwr_target=args.power)
     jlink_broken = connect(jlink)
+
+    if not jlink_broken:
+        return
 
     kill_evt = Event()
     input: Thread = Thread(target=reading_input, args=([kill_evt]), daemon=True)

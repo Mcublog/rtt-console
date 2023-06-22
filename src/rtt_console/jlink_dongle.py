@@ -8,6 +8,8 @@ from pylink import JLink, JLinkException, JLinkInterfaces, library
 CHIP_NAME_DEFAULT = 'STM32F407VE'
 DEFAULT_BUFFER_INDEX = 0
 
+CODEPAGES = ('utf-8', 'cp866', 'cp1251')
+
 class JLinkDongleException(Exception):
 
     def __init__(self, message):
@@ -36,7 +38,7 @@ class JLinkDongle:
         return wrap
 
     @check_exception # type: ignore
-    def connect(self):
+    def connect(self) -> bool:
         jlinkdll = None
         if self.dll_path:
             jlinkdll = library.Library()
@@ -45,8 +47,12 @@ class JLinkDongle:
                 jlinkdll.load(self.dll_path)
             except:
                 print(f"ERROR: check path: {self.dll_path}")
-                return
-        self.jlink = JLink(lib=jlinkdll)
+                return False
+        try:
+            self.jlink = JLink(lib=jlinkdll)
+        except Exception as e:
+            print(f"ERROR: JLink libs not found: {e}")
+            return False
         self.jlink.disable_dialog_boxes()
         self.jlink.open()
         self.jlink.power_on() if self.pwr_target else self.jlink.power_off()
@@ -84,12 +90,15 @@ class JLinkDongle:
 
     def read_rtt_string(self, terminal_number: int = DEFAULT_BUFFER_INDEX) -> str:
         data = self.read_rtt(terminal_number=terminal_number)
-        if data:
+        if not data:
+            return ""
+        for coding in CODEPAGES:
             try:
-                return bytes(data).decode('utf-8')
+                return bytes(data).decode(coding)
             except:
-                print(f"Do not decode: {data}")
-                return ""
+                continue
+        else:
+            print(f"Do not decode: {data}")
         return ""
 
     def write_rtt_sring(self, data: str, terminal_number: int = DEFAULT_BUFFER_INDEX) -> None:
