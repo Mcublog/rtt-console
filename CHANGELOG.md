@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.7 (2023-06-22)
+
+#### New Features
+
+* :sparkles: added cp866, cp1251 code pages
+
+Full set of changes: [`0.2.6...0.2.7`](https://github.com/Mcublog/rtt-console/compare/0.2.6...0.2.7)
+
 ## 0.2.6 (2022-10-29)
 
 #### Fixes
