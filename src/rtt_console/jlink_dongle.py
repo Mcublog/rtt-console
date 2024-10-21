@@ -24,6 +24,7 @@ class JLinkDongle:
     jlink:JLink = field(init=False)
     dll_path:str = ""
     pwr_target:bool = False
+    serial:str = None
 
     def check_exception(func): # type: ignore
         @functools.wraps(func)  # type: ignore
@@ -54,7 +55,7 @@ class JLinkDongle:
             print(f"ERROR: JLink libs not found: {e}")
             return False
         self.jlink.disable_dialog_boxes()
-        self.jlink.open()
+        self.jlink.open(serial_no=self.serial)
         self.jlink.power_on() if self.pwr_target else self.jlink.power_off()
         self.jlink.rtt_stop()
         self.jlink.set_tif(JLinkInterfaces.SWD)
