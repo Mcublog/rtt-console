@@ -100,6 +100,7 @@ def main():
 
     parser.add_argument(f'-s', '--speed', type=int, help='Target speed (default: auto)', required=False, default=0)
     parser.add_argument('-p', '--path', type=str, help='Path to JLink DLL', required=False, default="")
+    parser.add_argument('-i', '--id', type=str, help='ID (serial) of connected device', required=False, default=None)
     parser.add_argument('-pwr',
                         '--power',
                         help='Power on target by JLink',
@@ -108,7 +109,7 @@ def main():
 
     args = parser.parse_args()
     args.speed = 'auto' if args.speed == 0 else args.speed
-    jlink = JLinkDongle(chip_name=args.target, speed=args.speed, dll_path=args.path, pwr_target=args.power)
+    jlink = JLinkDongle(chip_name=args.target, speed=args.speed, dll_path=args.path, pwr_target=args.power, serial=args.id)
     jlink_broken = connect(jlink)
 
     if not jlink_broken:
