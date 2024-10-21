@@ -92,13 +92,13 @@ def reading_input(kill_evt: Event):
 
 def main():
     parser = argparse.ArgumentParser(prog='console', description=DESCRIPTION)
-    parser.add_argument(f'-t',
+    parser.add_argument('-t',
                         '--target',
                         type=str,
                         help=f'Target chip name (example: {CHIP_NAME_DEFAULT})',
                         default=CHIP_NAME_DEFAULT)
 
-    parser.add_argument(f'-s', '--speed', type=int, help='Target speed (default: auto)', required=False, default=0)
+    parser.add_argument('-s', '--speed', type=int, help='Target speed (default: auto)', required=False, default=0)
     parser.add_argument('-p', '--path', type=str, help='Path to JLink DLL', required=False, default="")
     parser.add_argument('-i', '--id', type=str, help='ID (serial) of connected device', required=False, default=None)
     parser.add_argument('-pwr',
